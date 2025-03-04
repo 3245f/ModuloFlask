@@ -41,6 +41,10 @@ def index():
 @app.route("/download")
 def download():
     #return f'<a href="{EXCEL_FILE}" download>Clicca qui per scaricare il file Excel</a>'
+    #return send_file(EXCEL_FILE, as_attachment=True, download_name="responses.xlsx")
+    if not os.path.exists(EXCEL_FILE):  # Controlla se il file esiste
+        return abort(404, description="File not found")  # Restituisce errore 404 se non esiste
+    
     return send_file(EXCEL_FILE, as_attachment=True, download_name="responses.xlsx")
 
 if __name__ == "__main__":
