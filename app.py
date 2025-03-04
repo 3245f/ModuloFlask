@@ -40,7 +40,8 @@ def index():
 # Endpoint per scaricare il file Excel
 @app.route("/download")
 def download():
-    return f'<a href="{EXCEL_FILE}" download>Clicca qui per scaricare il file Excel</a>'
+    #return f'<a href="{EXCEL_FILE}" download>Clicca qui per scaricare il file Excel</a>'
+    return send_file(EXCEL_FILE, as_attachment=True, download_name="responses.xlsx")
 
 if __name__ == "__main__":
     app.run(debug=True)
