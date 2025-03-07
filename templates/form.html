@@ -1,17 +1,1008 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-    <title>Modulo di Compilazione</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modulo di Risposte</title>
+    <script>
+
+        // Funzione per aggiungere un blocco di esperienza nell'ambito delle scelte effettuate per i progetti di sviluppo
+        function addExperience(containerId, type) {
+            let container = document.getElementById(containerId);
+            let newExperience = document.createElement("div");
+            newExperience.classList.add("experience-block");
+            newExperience.innerHTML = `
+            <label>Linguaggi di programmazione usati:</label>
+            <input type="text" name="linguaggi_${type}[]"><br>
+
+            <label>Tool utilizzati:</label>
+            <input type="text" name="tool_${type}[]"><br>
+
+            <label>Ambito progetto:</label>
+            <select name="Ambito_${type}[]">
+                <option value="Aziendale">Aziendale</option>
+                <option value="Universitario">Universitario</option>
+            </select><br>
+
+            <label>Descrizione del progetto:</label>
+            <textarea name="descrizione_${type}[]"></textarea><br>
+
+            <button type="button" onclick="removeExperience(this)">Rimuovi</button>
+    `   ;
+
+        container.appendChild(newExperience);
+        }
+
+        // Funzione per aggiungere un blocco di esperienza nell'ambito delle scelte effettuate per i progetti di V&V, System, Safety, Segnalamento
+        function addExperiences(containerId, type) {
+            let container = document.getElementById(containerId);
+            let newExperience = document.createElement("div");
+            newExperience.classList.add("experience-block");
+            newExperience.innerHTML = `
+            <label>Tecnologie usate/tool proprietari usati:</label>
+            <input type="text" name="tecnologie_${type}[]"><br>
+
+            <label>Azienda:</label>
+            <input type="text" name="azienda_${type}[]"><br>
+
+            <label>Descrizione dell'attività:</label>
+            <textarea name="descrizione_${type}[]"></textarea><br>
+
+            <button type="button" onclick="removeExperience(this)">Rimuovi</button>
+    `   ;
+
+        container.appendChild(newExperience);
+        }
+
+        // Funzione per rimuovere un blocco di esperienza
+        function removeExperience(button) {
+        button.parentElement.remove();
+        }
+
+        // Funzione per mostrare le domande aggiuntive per le scelte effettuate per i progetti di Sviluppo
+        function showExtraQuestions() {
+            let checkboxes = document.querySelectorAll("input[name='linguaggi']:checked");
+            document.querySelectorAll(".extra-questions").forEach(div => div.style.display = "none");
+            checkboxes.forEach(checkbox => {
+                let id = checkbox.value.toLowerCase().replace(/\+/g, "p");  // C++ diventa cpp
+                let extraDiv = document.getElementById("extra-" + id);
+                if (extraDiv) {
+                    extraDiv.style.display = "block";
+                }
+            });
+        }
+
+        // Funzione per mostrare le domande aggiuntive relative alla scelta PLC
+        function showExtraPlcQuestions() {
+        let checkboxesPlc = document.querySelectorAll("input[name='plc']:checked");
+
+        //Le domande aggiuntive risultano hidden fino a che l'utente non seleziona una voce dall'elenco
+        document.querySelectorAll(".extra-questions-plc").forEach(div => div.style.display = "none");
+
+        checkboxesPlc.forEach(checkbox => {
+            let id = checkbox.value.toLowerCase().replace(/\s+/g, "-");  // Siemens diventa siemens
+            let extraDiv = document.getElementById("extra-" + id);
+            if (extraDiv) {
+                extraDiv.style.display = "block";
+            }
+        });
+
+        
+    }
+
+        // Funzione per mostrare le scelte multiple disponibili per una certa domanda
+        function toggleExtra(area) {
+            let fieldset = document.getElementById("extra-" + area);
+            let checkbox = document.querySelector('input[name="sviluppo"][value="' + area + '"]');
+            fieldset.style.display = checkbox.checked ? "block" : "none";
+        }
+
+
+        // Funzione per mostrare le scelte multiple disponibili per una certa domanda ( la cui selezione è associata alla comparsa di ulteriori domande )
+        function toggleExtraQuestions(option) {
+            var extraFields = document.getElementById("extra-" + option);
+            var checkbox = document.querySelector("input[value='" + option + "']");
+
+            if (checkbox.checked) {
+                extraFields.style.display = "block";
+            } else {
+                extraFields.style.display = "none";
+            }
+        }
+
+        // Funzione per mostrare le scelte multiple disponibili per una certa domanda ( la cui selezione è associata alla comparsa di ulteriori domande )
+        function toggleDevelopmentOptions(value) {
+            var developmentSection = document.getElementById("development-options");
+
+            if (value === "Si") {
+                developmentSection.style.display = "block";
+            } else {
+                developmentSection.style.display = "none";
+                hideAllExtraQuestions(); 
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("input[name='progetti_sw_hw_auto']").forEach(function(radio) {
+        radio.addEventListener("change", function() {
+            toggleDevelopmentOptions(this.value);
+        });
+    });
+});
+
+
+    </script>
 </head>
 <body>
     <h2>Compila il modulo</h2>
-    <form method="post">
-        Nome: <input type="text" name="nome" required><br>
-        Email: <input type="email" name="email" required><br>
-        Risposta: <textarea name="risposta" required></textarea><br>
-        <input type="submit" value="Invia">
+    <form action="/" method="post">
+        <!-- NOME -->
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" required><br><br>
+
+        <!-- e-mail -->
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+        
+        <!-- Grado Istruzione -->
+        <label for="istruzione">Grado Istruzione:</label>
+        <input type="istruzione" id="istruzione" name="istruzione" ><br><br>
+
+        <!-- Indirizzo di studio -->
+        <label for="studi">Indirizzo di studio:</label>
+        <input type="studi" id="studi" name="studi" ><br><br>
+
+        <!-- Certificazioni acquisite -->
+        <label for="certificati">Certificazioni acquisite:</label>
+        <input type="certificati" id="certificati" name="certificati" ><br><br>
+
+        <!-- Per quali clienti hai lavorato -->
+        <label>Per quali clienti hai lavorato?</label><br>
+        <input type="checkbox" name="clienti" value="Hitachi"> Hitachi<br>
+        <input type="checkbox" name="clienti" value="Alstom"> Alstom<br>
+        <input type="checkbox" name="clienti" value="Progress Rail"> Progress Rail<br>
+        <input type="checkbox" name="clienti" value="MERMEC"> MERMEC<br>
+        <input type="checkbox" name="clienti" value="Angelstar"> Angelstar<br>
+        <input type="checkbox" name="clienti" value="AlmavivA"> AlmavivA<br>
+        <input type="checkbox" name="clienti" value="Marini"> Marini<br>
+        <input type="checkbox" name="clienti" value="Wabtec"> Wabtec<br>
+        <input type="checkbox" name="clienti" value="Faiveley"> Faiveley<br>
+        <input type="checkbox" name="clienti" value="Thales"> Thales<br>
+        <input type="checkbox" name="clienti" value="Bombardier"> Bombardier<br>
+        <input type="checkbox" name="clienti" value="Stellantis"> Stellantis<br>
+        <input type="checkbox" name="clienti" value="Piaggio"> Piaggio<br>
+        <input type="checkbox" name="clienti" value="Titagarh Firema"> Titagarh Firema<br>
+        <input type="checkbox" name="clienti" value="Ducati Energia"> Ducati Energia<br><br>
+
+        <!-- Nel corso dei progetti che hai svolto, in quali aree del contesto railway hai lavorato -->
+        <label>Nel corso dei progetti che hai svolto, in quali aree del contesto railway hai lavorato?</label><br>
+        <input type="checkbox" name="area_railway" value="sottosistemi di bordo"> sottosistemi di bordo<br>
+        <input type="checkbox" name="area_railway" value="sottosistemi di terra"> sottosistemi di terra<br>
+        <input type="checkbox" name="area_railway" value="rolling stock"> rolling stock<br>
+        <input type="checkbox" name="area_railway" value="passenger information system"> passenger information system<br>
+        <input type="checkbox" name="area_railway" value="infrastrutture"> infrastrutture<br>
+        <input type="checkbox" name="area_railway" value="strumenti e attrezzature"> strumenti e attrezzature<br>
+        <input type="checkbox" name="area_railway" value="integrazione terra-bordo"> integrazione terra-bordo<br>
+        <input type="checkbox" name="area_railway" value="V & V"> V & V<br>
+        <input type="checkbox" name="area_railway" value="schematics and apparatus"> schematics and apparatus<br>
+        <input type="checkbox" name="area_railway" value="interlocking"> interlocking<br>
+        <input type="checkbox" name="area_railway" value="segnalamento"> segnalamento<br>
+        <input type="checkbox" name="area_railway" value="manuali e report"> manuali e report<br><br>
+
+        <!-- Quali normative conosci -->
+        <label for="normative">Quali normative conosci? (Ex. 50126, 50128, 50129, SS-026, SS-113, SS-137, etc..)</label>
+        <input type="normative" id="normative" name="normative" ><br><br>
+
+        <!-- Hai mai lavorato a progetti di sviluppo software/firmware/automazione -->        
+        <label>Hai mai lavorato a progetti di sviluppo software/firmware/automazione?</label><br>
+        <input type="radio" name="progetti_sw_hw_auto" value="Si" required> Si<br>
+        <input type="radio" name="progetti_sw_hw_auto" value="No" required> No<br><br>
+
+        <div id="development-options" style="display: none;">
+        <!-- In quale ambito dello sviluppo hai lavorato -->
+            <label>In quale ambito dello sviluppo hai lavorato?</label><br>
+            <input type="checkbox" name="sviluppo" value="Applicativi" onchange="toggleExtraQuestions('Applicativi')"> Applicativi<br>
+            <input type="checkbox" name="sviluppo" value="Firmware" onchange="toggleExtraQuestions('Firmware')"> Firmware<br>
+            <input type="checkbox" name="sviluppo" value="Web" onchange="toggleExtraQuestions('Web')"> Web<br>
+            <input type="checkbox" name="sviluppo" value="Mobile" onchange="toggleExtraQuestions('Mobile')"> Mobile<br>
+            <input type="checkbox" name="sviluppo" value="Scada" onchange="toggleExtraQuestions('Scada')"> Scada<br>
+            <input type="checkbox" name="sviluppo" value="Plc" onchange="toggleExtraQuestions('Plc')"> Plc<br><br>
+            <!-- domande aggiuntive sullo Sviluppo -->
+
+            <!-- Sviluppo applicativi -->            
+            <div id="extra-Applicativi" class="extra-fields" style="display: none;">
+                <h4>Applicativi</h4>
+                <div id="applicativi-container">
+                    <div class="applicativi-experience">
+                        <label>Linguaggi di programmazione usati:</label>
+                        <input type="text" name="linguaggi_applicativi[]"><br>
+                        <label>Tool utilizzati:</label>
+                        <input type="text" name="tool_applicativi[]"><br>           
+                        <label>Ambito progetto:</label>
+                        <select name="Ambito_applicativi[]">
+                            <option value="Aziendale">Aziendale</option>
+                            <option value="Universitario">Universitario</option>
+                        </select><br>            
+                        <label>Descrizione del progetto:</label>
+                        <textarea name="descrizione_applicativi[]"></textarea><br><br>
+                    </div>
+                </div>
+                <!-- Pulsante per aggiungere un'altra esperienza in Applicativi -->
+                <button type="button" onclick="addExperience('applicativi-container', 'applicativi')">Aggiungi esperienza</button><br><br>
+            </div>
+
+            <!-- Sviluppo firmware -->               
+            <div id="extra-Firmware" class="extra-fields" style="display: none;">
+                <h4>Firmware</h4>
+                <div id="firmware-container">
+                    <div class="firmware-experience">
+                        <label>Linguaggi di programmazione usati:</label>
+                        <input type="text" name="linguaggi_firmware[]"><br>
+                        <label>Tool utilizzati:</label>
+                        <input type="text" name="tool_firmware[]"><br>           
+                        <label>Ambito progetto:</label>
+                        <select name="Ambito_firmware[]">
+                            <option value="Aziendale">Aziendale</option>
+                            <option value="Universitario">Universitario</option>
+                        </select><br>            
+                        <label>Descrizione del progetto:</label>
+                        <textarea name="descrizione_firmware[]"></textarea><br><br>
+                    </div>
+                </div>
+                <!-- Pulsante per aggiungere un'altra esperienza in Firmware -->
+                <button type="button" onclick="addExperience('firmware-container', 'firmware')">Aggiungi esperienza</button><br><br>
+            </div>
+
+            <!-- Sviluppo web -->   
+            <div id="extra-Web" class="extra-fields" style="display: none;">
+                <h4>Web</h4>
+                <div id="web-container">
+                    <div class="web-experience">
+                        <label>Linguaggi di programmazione usati:</label>
+                        <input type="text" name="linguaggi_web[]"><br>
+                        <label>Tool utilizzati:</label>
+                        <input type="text" name="tool_web[]"><br>           
+                        <label>Ambito progetto:</label>
+                        <select name="Ambito_web[]">
+                            <option value="Aziendale">Aziendale</option>
+                            <option value="Universitario">Universitario</option>
+                        </select><br>            
+                        <label>Descrizione del progetto:</label>
+                        <textarea name="descrizione_web[]"></textarea><br><br>
+                    </div>
+                </div>
+                <!-- Pulsante per aggiungere un'altra esperienza in Web -->
+                <button type="button" onclick="addExperience('web-container', 'web')">Aggiungi esperienza</button><br><br>
+            </div>
+
+            <!-- Sviluppo mobile -->   
+            <div id="extra-Mobile" class="extra-fields" style="display: none;">
+                <h4>Mobile</h4>
+                <div id="mobile-container">
+                    <div class="mobile-experience">
+                        <label>Linguaggi di programmazione usati:</label>
+                        <input type="text" name="linguaggi_mobile[]"><br>
+                        <label>Tool utilizzati:</label>
+                        <input type="text" name="tool_mobile[]"><br>           
+                        <label>Ambito progetto:</label>
+                        <select name="Ambito_mobile[]">
+                            <option value="Aziendale">Aziendale</option>
+                            <option value="Universitario">Universitario</option>
+                        </select><br>            
+                        <label>Descrizione del progetto:</label>
+                        <textarea name="descrizione_mobile[]"></textarea><br><br>
+                    </div>
+                </div>
+                <!-- Pulsante per aggiungere un'altra esperienza in Mobile -->
+                <button type="button" onclick="addExperience('mobile-container', 'mobile')">Aggiungi esperienza</button><br><br>
+            </div>
+
+            <!-- Sviluppo SCADA -->   
+            <div id="extra-Scada" class="extra-fields" style="display: none;">
+                <h4>Scada</h4>
+                <div id="scada-container">
+                    <div class="scada-experience">
+                        <label>Linguaggi di programmazione usati:</label>
+                        <input type="text" name="linguaggi_scada[]"><br>
+                        <label>Tool utilizzati:</label>
+                        <input type="text" name="tool_scada[]"><br>           
+                        <label>Ambito progetto:</label>
+                        <select name="Ambito_scada[]">
+                            <option value="Aziendale">Aziendale</option>
+                            <option value="Universitario">Universitario</option>
+                        </select><br>            
+                        <label>Descrizione del progetto:</label>
+                        <textarea name="descrizione_scada[]"></textarea><br><br>
+                    </div>
+                </div>
+                <!-- Pulsante per aggiungere un'altra esperienza in SCADA -->
+                <button type="button" onclick="addExperience('scada-container', 'scada')">Aggiungi esperienza</button><br><br>
+            </div>
+
+            <!-- Sviluppo PLC -->   
+            <div id="extra-Plc" class="extra-fields" style="display: none;">
+                <h4>Plc</h4>
+                <div id="plc-container">
+                    <div class="plc-experience">
+                        <label>Linguaggi di programmazione usati:</label>
+                        <input type="text" name="linguaggi_plc[]"><br>
+                        <label>Tool utilizzati:</label>
+                        <input type="text" name="tool_plc[]"><br>           
+                        <label>Ambito progetto:</label>
+                        <select name="Ambito_plc[]">
+                            <option value="Aziendale">Aziendale</option>
+                            <option value="Universitario">Universitario</option>
+                        </select><br>            
+                        <label>Descrizione del progetto:</label>
+                        <textarea name="descrizione_plc[]"></textarea><br><br>
+                    </div>
+                </div>
+                <!-- Pulsante per aggiungere un'altra esperienza in PLC -->
+                <button type="button" onclick="addExperience('plc-container', 'plc')">Aggiungi esperienza</button><br><br>
+            </div>
+        </div>
+
+        <!-- In quale ambito della V&V hai lavorato --> 
+        <label>In quale ambito della V&V hai lavorato?</label><br>
+        <input type="checkbox" name="v&v" value="functional_testing" onchange="toggleExtraQuestions('functional_testing')"> functional testing<br>
+        <input type="checkbox" name="v&v" value="test_and_commisioning" onchange="toggleExtraQuestions('test_and_commisioning')"> test and commisioning<br>
+        <input type="checkbox" name="v&v" value="unit" onchange="toggleExtraQuestions('unit')"> unit module component testing<br>
+        <input type="checkbox" name="v&v" value="analisi_statica" onchange="toggleExtraQuestions('analisi_statica')"> analisi statica<br>
+        <input type="checkbox" name="v&v" value="analisi_dinamica" onchange="toggleExtraQuestions('analisi_dinamica')"> analisi dinamica<br>
+        <input type="checkbox" name="v&v" value="automatic_test" onchange="toggleExtraQuestions('automatic_test')"> automatic test<br>
+        <input type="checkbox" name="v&v" value="piani_schematici" onchange="toggleExtraQuestions('piani_schematici')"> lettura e comprensione piani schematici<br>
+        <input type="checkbox" name="v&v" value="procedure"" onchange="toggleExtraQuestions('procedure')"> scrittura procedure test e validazione<br>
+        <input type="checkbox" name="v&v" value="cablaggi" onchange="toggleExtraQuestions('cablaggi')"> verifica cablaggi<br>
+        <input type="checkbox" name="v&v" value="FAT" onchange="toggleExtraQuestions('FAT')"> FAT<br>
+        <input type="checkbox" name="v&v" value="SAT" onchange="toggleExtraQuestions('SAT')"> SAT<br>
+        <input type="checkbox" name="v&v" value="doc" onchange="toggleExtraQuestions('doc')"> verifica documentale<br><br>
+        <!-- Domande aggiuntive sulla V&V-->
+
+        <!-- V&V functional_testing-->
+        <div id="extra-functional_testing" class="extra-fields" style="display: none;">
+            <h4>functional_testing</h4>
+            <div id="functional_testing-container">
+                <div class="functional_testing-experience">
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_functional_testing[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_functional_testing[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_functional_testing[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in functional_testing -->
+            <button type="button" onclick="addExperiences('functional_testing-container', 'functional_testing')">Aggiungi esperienza</button><br><br>
+        </div>
+
+
+        <!-- V&V test_and_commisioning-->    
+        <div id="extra-test_and_commisioning" class="extra-fields" style="display: none;">
+            <h4>test_and_commisioning</h4>
+            <div id="test_and_commisioning-container">
+                <div class="test_and_commisioning-experience">
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_test_and_commisioning[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_test_and_commisioning[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_test_and_commisioning[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in test_and_commisioning -->
+            <button type="button" onclick="addExperiences('test_and_commisioning-container', 'test_and_commisioning')">Aggiungi esperienza</button><br><br>
+        </div>
+
+
+        <!-- V&V Unit_test-->        
+        <div id="extra-unit" class="extra-fields" style="display: none;">
+            <h4>unit</h4>
+            <div id="unit-container">
+                <div class="unit-experience">            
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_unit[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_unit[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_unit[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in Unit_test -->
+            <button type="button" onclick="addExperiences('unit-container', 'unit')">Aggiungi esperienza</button><br><br>
+        </div>
+
+
+        <!-- V&V analisi_statica-->        
+        <div id="extra-analisi_statica" class="extra-fields" style="display: none;">
+            <h4>analisi_statica</h4>
+            <div id="analisi_statica-container">
+                <div class="analisi_statica-experience">               
+                <label>Tecnologie usate/tool proprietari usati:</label>
+                <input type="text" name="tecnologie_analisi_statica[]"><br>
+                <label>Azienda:</label>
+                <input type="text" name="azienda_analisi_statica[]"><br>
+                <label>Descrizione dell'attività:</label>
+                <textarea name="descrizione_analisi_statica[]"></textarea><br><br>
+            </div>
+        </div>
+        <!-- Pulsante per aggiungere un'altra esperienza in analisi_statica -->
+        <button type="button" onclick="addExperiences('analisi_statica-container', 'analisi_statica')">Aggiungi esperienza</button><br><br>
+    </div>
+
+
+        <!-- V&V analisi_dinamica-->        
+        <div id="extra-analisi_dinamica" class="extra-fields" style="display: none;">
+            <h4>analisi_dinamica</h4>
+            <div id="analisi_dinamica-container">
+                <div class="analisi_dinamica-experience">             
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_analisi_dinamica[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_analisi_dinamica[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_analisi_dinamica[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in analisi_dinamica -->
+            <button type="button" onclick="addExperiences('analisi_dinamica-container', 'analisi_dinamica')">Aggiungi esperienza</button><br><br>
+        </div>                
+
+        <!-- V&V automatic_test-->        
+        <div id="extra-automatic_test" class="extra-fields" style="display: none;">
+            <h4>automatic_test</h4>
+            <div id="automtic_test-container">
+                <div class="automatic_test-experience">             
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_automatic_test[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_automatic_test[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_automatic_test[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in automatic_test -->
+            <button type="button" onclick="addExperiences('automatic_test-container', 'automatic_test')">Aggiungi esperienza</button><br><br>
+        </div>                 
+
+        <!-- V&V piani schematici-->        
+        <div id="extra-piani_schematici" class="extra-fields" style="display: none;">
+            <h4>piani_schematici</h4>
+            <div id="piani_schematici-container">
+                <div class="piani_schematici-experience">             
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_piani_schematici[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_piani_schematici[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_piani_schematici[]"></textarea><br><br>
+                 </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in piani_schematici -->
+            <button type="button" onclick="addExperiences('piani_schematici-container', 'piani_schematici')">Aggiungi esperienza</button><br><br>
+        </div>  
+
+
+        <!-- V&V procedure-->        
+        <div id="extra-procedure" class="extra-fields" style="display: none;">
+            <h4>procedure</h4>
+            <div id="procedure-container">
+                <div class="procedure-experience">             
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_procedure[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_procedure[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_procedure[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in procedure -->
+            <button type="button" onclick="addExperiences('procedure-container', 'procedure')">Aggiungi esperienza</button><br><br>
+        </div> 
+
+
+        <!-- V&V cablaggi-->        
+        <div id="extra-cablaggi" class="extra-fields" style="display: none;">
+            <h4>cablaggi</h4>
+            <div id="cablaggi-container">
+                <div class="cablaggi-experience">                
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_cablaggi[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_cablaggi[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_cablaggi[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in procedure -->
+            <button type="button" onclick="addExperiences('cablaggi-container', 'cablaggi')">Aggiungi esperienza</button><br><br>
+        </div> 
+
+
+        <!-- V&V FAT-->        
+        <div id="extra-FAT" class="extra-fields" style="display: none;">
+            <h4>FAT</h4>
+            <div id="fat-container">
+                <div class="fat-experience">              
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_FAT[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_FAT[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_FAT[]"></textarea><br><br>
+            </div>
+        </div>
+        <!-- Pulsante per aggiungere un'altra esperienza in FAT -->
+        <button type="button" onclick="addExperiences('fat-container', 'fat')">Aggiungi esperienza</button><br><br>
+    </div> 
+
+        <!-- V&V SAT-->        
+        <div id="extra-SAT" class="extra-fields" style="display: none;">
+            <h4>SAT</h4>
+            <div id="sat-container">
+                <div class="sat-experience">             
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_SAT[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_SAT[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_SAT[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in SAT -->
+            <button type="button" onclick="addExperiences('sat-container', 'sat')">Aggiungi esperienza</button><br><br>
+        </div> 
+
+
+        <!-- V&V documentazione-->        
+        <div id="extra-doc" class="extra-fields" style="display: none;">
+            <h4>doc</h4>
+            <div id="doc-container">
+                <div class="doc-experience">      
+                    <label>Tecnologie usate/tool proprietari usati:</label>
+                    <input type="text" name="tecnologie_doc[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_doc[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_doc[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in DOC -->
+            <button type="button" onclick="addExperiences('doc-container', 'doc')">Aggiungi esperienza</button><br><br>
+        </div> 
+
+        <!-- In quale ambito della Safety hai lavorato-->
+        <label>In quale ambito della Safety hai lavorato?</label><br>
+        <input type="checkbox" name="safety" value="RAMS" onchange="toggleExtraQuestions('RAMS')"> RAMS<br>
+        <input type="checkbox" name="safety" value="hazard_analysis" onchange="toggleExtraQuestions('hazard_analysis')"> hazard analysis<br>
+        <input type="checkbox" name="safety" value="verification_report" onchange="toggleExtraQuestions('verification_report')"> verification report<br>
+        <input type="checkbox" name="safety" value="fire_safety" onchange="toggleExtraQuestions('fire_safety')"> fire safety<br>
+        <input type="checkbox" name="safety" value="reg_402" onchange="toggleExtraQuestions('reg_402')"> Verifica e validazione documentale per la valutazione del rischio in accordo al regolamento 402<br><br>
+        <!-- Domande aggiuntive sulla Safety-->
+
+        <!-- Safety RAMS-->         
+        <div id="extra-RAMS" class="extra-fields" style="display: none;">
+            <h4>RAMS</h4>
+            <div id="rams-container">
+                <div class="firmware-experience">
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_RAMS[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_RAMS[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_RAMS[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in RAMS -->
+            <button type="button" onclick="addExperiences('rams-container', 'RAMS')">Aggiungi esperienza</button><br><br>
+        </div>
+
+        <!-- Safety hazard_analysis-->
+        <div id="extra-hazard_analysis" class="extra-fields" style="display: none;">
+            <h4>hazard_analysis</h4>
+            <div id="hazard-container">
+                <div class="hazard_analysis-experience">
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_hazard_analysis[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_hazard_analysis[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_hazard_analysis[]"></textarea><br><br>
+                </div>
+            </div>
+        <!-- Pulsante per aggiungere un'altra esperienza in hazard_analysis -->
+            <button type="button" onclick="addExperiences('hazard-container', 'hazard')">Aggiungi esperienza</button><br><br>
+        </div>
+
+        <!-- Safety verification_report-->
+        <div id="extra-verification_report" class="extra-fields" style="display: none;">
+            <h4>verification_report</h4>
+            <div id="verification-container">
+                <div class="verification_report-experience">
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_verification_report[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_verification_report[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_verification_report[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in verificationReport -->
+                <button type="button" onclick="addExperiences('verification-container', 'verification')">Aggiungi esperienza</button><br><br>
+            </div>                
+
+        <!-- Safety fire-->
+        <div id="extra-fire_safety" class="extra-fields" style="display: none;">
+            <h4>fire_safety</h4>
+            <div id="fire-container">
+                <div class="fire_safety-experience">            
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_fire_safety[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_fire_safety[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_fire_safety[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in fire_safety -->
+                <button type="button" onclick="addExperiences('fire-container', 'fire')">Aggiungi esperienza</button><br><br>
+            </div>   
+
+
+        <!-- Safety regolamento_402-->
+        <div id="extra-reg_402" class="extra-fields" style="display: none;">
+            <h4>reg_402</h4>
+            <div id="reg_402-container">
+                <div class="reg_402-experience">          
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_reg_402[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_reg_402[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_reg_402[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in reg_402 -->
+                <button type="button" onclick="addExperiences('reg_402-container', 'reg_402')">Aggiungi esperienza</button><br><br>
+            </div>   
+
+        <!-- In quale ambito System hai lavorato-->
+        <label>In quale ambito System hai lavorato?</label><br>
+        <input type="checkbox" name="system" value="requirement_management" onchange="toggleExtraQuestions('requirement_management')"> requirement management<br>
+        <input type="checkbox" name="system" value="requirement_engineering" onchange="toggleExtraQuestions('requirement_engineering')"> requirement engineering<br>
+        <input type="checkbox" name="system" value="system_engineering" onchange="toggleExtraQuestions('system_engineering')"> system engineering<br>
+        <input type="checkbox" name="system" value="project_engineering" onchange="toggleExtraQuestions('project_engineering')"> project engineering<br><br>
+        
+        <!-- System requirement_management-->
+        <div id="extra-requirement_management" class="extra-fields" style="display: none;">
+            <h4>requirement_management</h4>
+            <div id="requirement_management-container">
+                <div class="requirement_management-experience">       
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_requirement_management[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_requirement_management[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_requirement_management[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in requirement_management -->
+                <button type="button" onclick="addExperiences('requirement_management-container', 'requirement_management')">Aggiungi esperienza</button><br><br>
+            </div>  
+
+
+        <!-- System requirement_engineering-->        
+        <div id="extra-requirement_engineering" class="extra-fields" style="display: none;">
+            <h4>requirement_engineering</h4>
+            <div id="requirement_engineering-container">
+                <div class="requirement_engineering-experience">                   
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_requirement_engineering[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_requirement_engineering[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_requirement_engineering[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in requirement_engineering -->
+                <button type="button" onclick="addExperiences('requirement_engineering-container', 'requirement_engineering')">Aggiungi esperienza</button><br><br>
+            </div>  
+
+        <!-- System engineering-->        
+        <div id="extra-system_engineering" class="extra-fields" style="display: none;">
+            <h4>system_engineering</h4>
+            <div id="system_engineering-container">
+                <div class="system_engineering-experience">               
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_system_engineering[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_system_engineering[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_system_engineering[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in system_engineering -->
+                <button type="button" onclick="addExperiences('system_engineering-container', 'system_engineering')">Aggiungi esperienza</button><br><br>
+            </div>                  
+
+        <!-- System project engineering-->        
+        <div id="extra-project_engineering" class="extra-fields" style="display: none;">
+            <h4>reg_402</h4>
+            <div id="project_engineering-container">
+                <div class="project_engineering-experience">             
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_project_engineering[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_project_engineering[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_project_engineering[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in project_engineering -->
+            <button type="button" onclick="addExperiences('project_engineering-container', 'project_engineering')">Aggiungi esperienza</button><br><br>
+        </div>                 
+
+        <!-- In quale ambito dei sistemi di Segnalamento hai lavorato -->
+        <label>In quale ambito dei sistemi di Segnalamento hai lavorato?</label><br>
+        <input type="checkbox" name="segnalamento" value="piani_schematici_segnalamento" onchange="toggleExtraQuestions('piani_schematici_segnalamento')"> redazione piani schematici<br>
+        <input type="checkbox" name="segnalamento" value="cfg_impianti" onchange="toggleExtraQuestions('cfg_impianti')"> configurazione impianti<br>
+        <input type="checkbox" name="segnalamento" value="layout_apparecchiature" onchange="toggleExtraQuestions('layout_apparecchiature')"> redazione layout apparecchiature<br>
+        <input type="checkbox" name="segnalamento" value="architettura_rete" onchange="toggleExtraQuestions('architettura_rete')"> redazione architettura di rete<br>
+        <input type="checkbox" name="segnalamento" value="computo_metrico" onchange="toggleExtraQuestions('computo_metrico')"> computo metrico<br><br>
+        <!-- Domande aggiuntive Segnalamento-->
+
+        <!-- Segnalamento piani schematici-->        
+        <div id="extra-piani_schematici_segnalamento" class="extra-fields" style="display: none;">
+            <h4>piani_schematici_segnalamento</h4>
+            <div id="piani_schematici_segnalamento-container">
+                <div class="piani_schematici_segnalamento-experience">             
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_piani_schematici_segnalamento[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_piani_schematici_segnalamento[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_piani_schematici_segnalamento[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in piani_schematici_segnalamento -->
+            <button type="button" onclick="addExperiences('piani_schematici_segnalamento-container', 'piani_schematici_segnalamento')">Aggiungi esperienza</button><br><br>
+        </div>                       
+
+        <!-- Segnalamento cfg_impianti-->        
+        <div id="extra-cfg_impianti" class="extra-fields" style="display: none;">
+            <h4>cfg_impianti</h4>
+            <div id="cfg_impianti-container">
+                <div class="cfg_impianti-experience">             
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_cfg_impianti[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_cfg_impianti[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_cfg_impianti[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in cfg_impianti -->
+            <button type="button" onclick="addExperiences('cfg_impianti-container', 'cfg_impianti')">Aggiungi esperienza</button><br><br>
+        </div>                  
+
+        <!-- Segnalamento layout_apparecchiature-->        
+        <div id="extra-layout_apparecchiature" class="extra-fields" style="display: none;">
+            <h4>layout_apparechhiature</h4>
+            <div id="layout_apparecchiature-container">
+                <div class="layout_apparecchiature-experience">               
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_layout_apparecchiature[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_layout_apparecchiature[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_layout_apparecchiature[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in layout_apparecchiature -->
+            <button type="button" onclick="addExperiences('layout_apparecchiature-container', 'layout_apparecchiature')">Aggiungi esperienza</button><br><br>
+        </div>  
+
+        
+        <!-- Segnalamento architettura_rete-->        
+        <div id="extra-architettura_rete" class="extra-fields" style="display: none;">
+            <h4>architettura_rete</h4>
+            <div id="architettura_rete-container">
+                <div class="architettura_rete-experience">             
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_architettura_rete[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_architettura_rete[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_architettura_rete[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in architettura_rete -->
+            <button type="button" onclick="addExperiences('architettura_rete-container', 'architettura_rete')">Aggiungi esperienza</button><br><br>
+        </div> 
+
+
+        <!-- Segnalamento computo_metrico-->        
+        <div id="extra-computo_metrico" class="extra-fields" style="display: none;">
+            <h4>computo_metrico</h4>
+            <div id="computo_metrico-container">
+                <div class="computo_metrico-experience">              
+                    <label>Tecnologie usate:</label>
+                    <input type="text" name="tecnologie_computo_metrico[]"><br>
+                    <label>Azienda:</label>
+                    <input type="text" name="azienda_computo_metrico[]"><br>
+                    <label>Descrizione dell'attività:</label>
+                    <textarea name="descrizione_computo_metrico[]"></textarea><br><br>
+                </div>
+            </div>
+            <!-- Pulsante per aggiungere un'altra esperienza in computo_metrico -->
+            <button type="button" onclick="addExperiences('computo_metrico-container', 'computo_metrico')">Aggiungi esperienza</button><br><br>
+        </div> 
+
+
+        <!-- In quale ambito dei progetti BIM hai lavorato-->
+        <label>In quale ambito dei progetti BIM hai lavorato?</label><br>
+        <input type="checkbox" name="BIM" value="todo" onchange="toggleExtra('todo')"> todo<br><br>
+        <!-- Domande aggiuntive BIM-->
+
+        <div id="extra-todo" class="extra-fields" style="display: none;">
+            <h4>todo</h4>
+            <label>Tecnologie usate:</label>
+            <input type="text" name="tecnologie_BIM"><br>
+            <label>Azienda:</label>
+            <input type="text" name="azienda_BIM"><br>
+            <label>Descrizione dell'attività:</label>
+            <textarea name="descrizione_BIM"></textarea><br>
+            <label>Certificazioni acquisite:</label>
+            <textarea name="certificazioni_BIM"></textarea><br><br>
+        </div>
+
+
+
+        <!-- Hai lavorato a progetti come PM / PMO o con un ruolo nella Direzione Tecnica-->
+        <label>Hai lavorato a progetti come PM / PMO o con un ruolo nella Direzione Tecnica?</label><br>
+        <input type="checkbox" name="ruolo" value="ruolo" onchange="toggleExtra('todo')"> ruolo<br><br>
+         <!-- Domande aggiuntive ruolo-->
+
+        <div id="extra-todos" class="extra-fields" style="display: none;">
+            <h4>todos</h4>
+            <label>Tecnologie usate:</label>
+            <input type="text" name="tecnologie_direzione_tecnica"><br>
+            <label>Azienda:</label>
+            <input type="text" name="azienda_direzione_tecnica"><br>
+            <label>Descrizione dell'attività:</label>
+            <textarea name="descrizione_direzione_tecnica"></textarea><br>
+            <label>Certificazioni acquisite:</label>
+            <textarea name="certificazioni_direzione_tecnica"></textarea><br><br>
+        </div>
+
+
+        <!-- Quali metodologie hai applicato nei progetti a cui hai preso parte-->
+        <label>Quali metodologie hai applicato nei progetti a cui hai preso parte?</label><br>
+        <input type="checkbox" name="metodologia" value="agile" onchange="toggleExtra('agile')"> agile<br>
+        <input type="checkbox" name="metodologia" value="kanban" onchange="toggleExtra('kanban')"> kanban<br>
+        <input type="checkbox" name="metodologia" value="scrum" onchange="toggleExtra('scrum')"> scrum<br>
+        <input type="checkbox" name="metodologia" value="devOps" onchange="toggleExtra('devOps')"> devOps<br>
+        <input type="checkbox" name="metodologia" value="waterfall" onchange="toggleExtra('waterfall')"> waterfall<br>
+        <input type="checkbox" name="metodologia" value="V-model" onchange="toggleExtra('V_model')"> V-model<br>
+        <input type="checkbox" name="metodologia" value="lean_startup" onchange="toggleExtra('lean_startup')"> lean_startup<br>
+        <input type="checkbox" name="metodologia" value="RAD" onchange="toggleExtra('RAD')"> RAD<br>
+        <input type="checkbox" name="metodologia" value="spiral_model" onchange="toggleExtra('spiral_model')"> spiral_model<br><br>
+
+
+
+        <!-- Spazio libero per aggiungere dettagli sulle attività svolte-->
+        <label>Spazio libero per aggiungere dettagli sulle attività svolte:</label>
+        <input type="text" id="altro" name="altro" ><br><br>
+
+        <!-- Skill tecniche acquisite a livello di hobby e tempo libero-->
+        <label>Skill tecniche acquisite a livello di hobby e tempo libero (making, stampa 3D, domotica, ...):</label>
+        <input type="text" id="hobby" name="hobby" ><br><br>
+
+        <!-- Sede Alten di riferimento-->
+        <label for="sede">Sede:</label>
+        <input type="text" id="sede" name="sede" required><br><br>
+
+         <!-- Quanti anni di esperienza lavorativa hai maturato-->
+        <label for="esperienza">Quanti anni di esperienza lavorativa hai maturato?</label>
+        <select id="esperienza" name="esperienza" required>
+            <option value="<1">&lt;1 anno</option>
+            <option value="1">1 anno</option>
+            <option value="2">2 anni</option>
+            <option value="3">3 anni</option>
+            <option value="4">4 anni</option>
+            <option value="5">5 anni</option>
+            <option value=">5">&gt;5 anni</option>
+        </select>
+        <br><br>
+
+        <!-- Quanti anni di esperienza lavorativa hai maturato in Alten-->
+        <label for="esperienza_alten">Quanti anni di esperienza lavorativa hai maturato in Alten?</label>
+        <select id="esperienza_alten" name="esperienza_alten" required>
+            <option value="<1">&lt;1 anno</option>
+            <option value="1">1 anno</option>
+            <option value="2">2 anni</option>
+            <option value="3">3 anni</option>
+            <option value="4">4 anni</option>
+            <option value="5">5 anni</option>
+            <option value=">5">&gt;5 anni</option>
+        </select>
+        <br><br>
+
+        <!-- Quali linguaggi di programmazione conosci->
+        <label>Quali linguaggi di programmazione conosci?</label><br>
+        <input type="checkbox" name="linguaggi" value="C++" onclick="showExtraQuestions()"> C++<br>
+        <input type="checkbox" name="linguaggi" value="Java" onclick="showExtraQuestions()"> Java<br>
+        <input type="checkbox" name="linguaggi" value="Python" onclick="showExtraQuestions()"> Python<br>
+        <input type="checkbox" name="linguaggi" value="JavaScript" onclick="showExtraQuestions()"> JavaScript<br><br>-->
+      
+        <!-- Domande extra per ogni linguaggio->
+        <div id="extra-cpp" class="extra-questions" style="display:none;">
+            <h4>Domande su C++</h4>
+            Da quanto tempo usi C++? <input type="text" name="cpp_tempo"><br>
+            Hai usato C++ in azienda o in università? <input type="text" name="cpp_luogo"><br>
+            Descrivi un progetto fatto con C++: <input type="text" name="cpp_progetto"><br><br>
+        </div>
+
+        <div id="extra-java" class="extra-questions" style="display:none;">
+            <h4>Domande su Java</h4>
+            Da quanto tempo usi Java? <input type="text" name="java_tempo"><br>
+            Hai usato Java in azienda o in università? <input type="text" name="java_luogo"><br>
+            Descrivi un progetto fatto con Java: <input type="text" name="java_progetto"><br><br>
+        </div>
+
+        <div id="extra-python" class="extra-questions" style="display:none;">
+            <h4>Domande su Python</h4>
+            Da quanto tempo usi Python? <input type="text" name="python_tempo"><br>
+            Hai usato Python in azienda o in università? <input type="text" name="python_luogo"><br>
+            Descrivi un progetto fatto con Python: <input type="text" name="python_progetto"><br><br>
+        </div>
+
+        <div id="extra-javascript" class="extra-questions" style="display:none;">
+            <h4>Domande su javaScript</h4>
+            Da quanto tempo usi javaScript? <input type="text" name="javascript_tempo"><br>
+            Hai usato javaScript in azienda o in università? <input type="text" name="javascript_luogo"><br>
+            Descrivi un progetto fatto con javaScript: <input type="text" name="javascript_progetto"><br><br>
+        </div>-->
+
+        <!-- Quali Sistemi Operativi conosci ed hai utilizzato -->
+        <label for="SistemiOperativi">Quali Sistemi Operativi conosci ed hai utilizzato:</label>
+        <input type="text" id="SistemiOperativi" name="SistemiOperativi" ><br><br>
+
+        <!-- Quali PLC conosci ->
+        <label>Quali PLC conosci?</label><br>
+        <input type="checkbox" name="plc" value="Siemens" onclick="showExtraPlcQuestions()"> Siemens<br>
+        <input type="checkbox" name="plc" value="Allen-Bradley" onclick="showExtraPlcQuestions()"> Allen-Bradley<br>
+        <input type="checkbox" name="plc" value="Omron" onclick="showExtraPlcQuestions()"> Omron<br><br>-->
+        
+        <!-- Domande extra per i PLC ->
+        <div id="extra-siemens" class="extra-questions-plc" style="display:none;">
+            <h4>Domande su Siemens</h4>
+            Da quanto tempo usi Siemens? <input type="text" name="siemens_tempo"><br>
+            Hai usato Siemens in azienda o in università? <input type="text" name="siemens_luogo"><br>
+            Descrivi un progetto fatto con Siemens: <input type="text" name="siemens_progetto"><br><br>
+        </div>
+        
+        <div id="extra-allen-bradley" class="extra-questions-plc" style="display:none;">
+            <h4>Domande su Allen-Bradley</h4>
+            Da quanto tempo usi Allen-Bradley? <input type="text" name="allen-bradley_tempo"><br>
+            Hai usato Allen-Bradley in azienda o in università? <input type="text" name="allen-bradley_luogo"><br>
+            Descrivi un progetto fatto con Allen-Bradley: <input type="text" name="allen-bradley_progetto"><br><br>
+        </div>
+        
+        <div id="extra-omron" class="extra-questions-plc" style="display:none;">
+            <h4>Domande su Omron</h4>
+            Da quanto tempo usi Omron? <input type="text" name="omron_tempo"><br>
+            Hai usato Omron in azienda o in università? <input type="text" name="omron_luogo"><br>
+            Descrivi un progetto fatto con Omron: <input type="text" name="omron_progetto"><br><br>
+        </div>-->
+
+
+
+    <!-- Pulsante per inviare le risposte -->
+        <button type="submit">Invia</button>
     </form>
-    <br>
-    <a href="/download">Scarica il file Excel</a>
+
+    <h3>Scarica le risposte</h3>
+    <a href="/download">Clicca qui per scaricare il file Excel</a>
 </body>
 </html>
+
