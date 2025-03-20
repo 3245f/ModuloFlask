@@ -1,33 +1,17 @@
-from flask import Flask, request, render_template, send_file, abort
+from flask import Flask, request, render_template, send_file, abort, redirect, url_for
 import pandas as pd
 import os
-
-
-
-
-'''def format_risposta_aperta(domanda, risposta):
-    return f"{domanda}: {risposta}" if risposta else ""'''
-
-'''"Linguaggi": linguaggi,
-            "C++": format_dettagli("C++", request.form.get("cplus_tempo", ""), request.form.get("cplus_luogo", ""), request.form.get("cplus_progetto", "")),
-            "Java": format_dettagli("Java", request.form.get("java_tempo", ""), request.form.get("java_luogo", ""), request.form.get("java_progetto", "")),
-            "Python": format_dettagli("Python", request.form.get("python_tempo", ""), request.form.get("python_luogo", ""), request.form.get("python_progetto", "")),
-            "JavaScript": format_dettagli("JavaScript", request.form.get("javascript_tempo", ""), request.form.get("javascript_luogo", ""), request.form.get("javascript_progetto", "")),
-            "PLC": plc,
-            "Sistemi Operativi": sistemi_operativi,
-            "Siemens": format_dettagli("Siemens", request.form.get("siemens_tempo", ""), request.form.get("siemens_luogo", ""), request.form.get("siemens_progetto", "")),
-            "Allen-Bradley": format_dettagli("Allen-Bradley", request.form.get("allen_tempo", ""), request.form.get("allen_luogo", ""), request.form.get("allen_progetto", "")),
-            "Omron": format_dettagli("Omron", request.form.get("omron_tempo", ""), request.form.get("omron_luogo", ""), request.form.get("omron_progetto", "")),
-'''
-
-'''def format_dettagli(tecnologia, tempo, luogo, progetto):
-    return f"Mesi: {tempo} | Esperienza: {luogo} | Progetto: {progetto}" if (tempo or luogo or progetto) else ""'''
-
-
+from datetime import datetime
 
 app = Flask(__name__)
 
 EXCEL_FILE = "skills.xlsx"
+USER_FILES_DIR = "skills_user"
+os.makedirs(USER_FILES_DIR, exist_ok=True)
+
+
+user_df = pd.DataFrame(columns=[
+        "Nome", "Email"])
 
 if not os.path.exists(EXCEL_FILE):
 
@@ -47,6 +31,18 @@ def get_next_id():
     return 1
 
 
+
+def remove_user_from_main_file(user_id):
+    # Rimuovi la riga dal file principale basata sull'ID dell'utente
+    if os.path.exists(EXCEL_FILE):
+        df = pd.read_excel(EXCEL_FILE)
+        # Trova e rimuovi la riga corrispondente all'ID dell'utente
+        df = df[df["ID"] != user_id]
+        df.to_excel(EXCEL_FILE, index=False)
+
+
+
+
 # Funzione per aggiungere le informazioni in ordine logico
 def aggiungi_sezione(nome_sezione, scelte, dettagli_dict,data):
     """Aggiunge la colonna con le scelte e i dettagli di una specifica area al dizionario dei dati"""
@@ -59,6 +55,11 @@ def aggiungi_sezione(nome_sezione, scelte, dettagli_dict,data):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+
+    success_message = None
+    show_delete_button = False
+    user_id = None  # Variabile per salvare l'ID dell'utente
+    user_filename = None
     if request.method == "POST":
 
         #preleva i dati dal form
@@ -96,19 +97,19 @@ def index():
             linguaggi = request.form.getlist(f'linguaggi_{area.lower()}[]')
             tool = request.form.getlist(f'tool_{area.lower()}[]')
             ambito = request.form.getlist(f'Ambito_{area.lower()}[]')
+            durata = request.form.getlist(f'durata_{area.lower()}[]')
             descrizione = request.form.getlist(f'descrizione_{area.lower()}[]')
-            #print(f"{area} -> Linguaggi: {linguaggi}, Tool: {tool}, Ambito: {ambito}, Descrizione: {descrizione}")
+            #print(f"{area} -> Linguaggi: {linguaggi}, Tool: {tool}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
-            for i in range(max(len(linguaggi), len(tool), len(ambito), len(descrizione))):
+            for i in range(max(len(linguaggi), len(tool), len(ambito), len(durata), len(descrizione))):
                 l = linguaggi[i] if i < len(linguaggi) else ""
                 t = tool[i] if i < len(tool) else ""
                 a = ambito[i] if i < len(ambito) else ""
+                e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
-                esperienze.append(f"{l} | {t} | {a} | {d}")
+                esperienze.append(f"{l} | {t} | {a} | {e} | {d}")
             dettagli_sviluppo[area] =esperienze
-        #print("dettagli sviluppo",dettagli_sviluppo)
-        #linguaggi = ", ".join(request.form.getlist("linguaggi")) if request.form.getlist("linguaggi") else "Nessuno"
-        #plc = ", ".join(request.form.getlist("plc")) if request.form.getlist("plc") else "Nessuno"
+
       
 # Progetti V&V
         scelte_progetti_vv = request.form.getlist('v&v')  
@@ -119,14 +120,16 @@ def index():
 
             tecnologie = request.form.getlist(f'tecnologie_{area}[]')
             ambito = request.form.getlist(f'azienda_{area}[]')
+            durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
-            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Descrizione: {descrizione}")
+            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
             for i in range(max(len(tecnologie), len(ambito), len(descrizione))):
                 t = tecnologie[i] if i < len(tecnologie) else ""
                 a = ambito[i] if i < len(ambito) else ""
+                e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
-                esperienze.append(f" {t} | {a} | {d}")
+                esperienze.append(f" {t} | {a} | {e} | {d}")
             dettagli_vv[area] =esperienze
        
 # Progetti System
@@ -137,14 +140,16 @@ def index():
                 continue  
             tecnologie = request.form.getlist(f'tecnologie_{area}[]')
             ambito = request.form.getlist(f'azienda_{area}[]')
+            durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
-            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Descrizione: {descrizione}")
+            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
             for i in range(max(len(tecnologie), len(ambito), len(descrizione))):
                 t = tecnologie[i] if i < len(tecnologie) else ""
                 a = ambito[i] if i < len(ambito) else ""
+                e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
-                esperienze.append(f"{t} | {a} | {d}")
+                esperienze.append(f"{t} | {a} | {e} | {d}")
             dettagli_system[area] =esperienze
         #print(dettagli_system)
        
@@ -159,14 +164,16 @@ def index():
 
             tecnologie = request.form.getlist(f'tecnologie_{area}[]')
             ambito = request.form.getlist(f'azienda_{area}[]')
+            durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
-            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Descrizione: {descrizione}")
+            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
             for i in range(max(len(tecnologie), len(ambito), len(descrizione))):
                 t = tecnologie[i] if i < len(tecnologie) else ""
                 a = ambito[i] if i < len(ambito) else ""
+                e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
-                esperienze.append(f"{t} | {a} | {d}")
+                esperienze.append(f"{t} | {a} | {e} | {d}")
             dettagli_safety[area] =esperienze
         #print(dettagli_safety)
       
@@ -180,14 +187,16 @@ def index():
 
             tecnologie = request.form.getlist(f'tecnologie_{area}[]')
             ambito = request.form.getlist(f'azienda_{area}[]')
+            durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
-            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Descrizione: {descrizione}")
+            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
             for i in range(max(len(tecnologie),len(ambito), len(descrizione))):
                 t = tecnologie[i] if i < len(tecnologie) else ""
                 a = ambito[i] if i < len(ambito) else ""
+                e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
-                esperienze.append(f"{t} | {a} | {d}")
+                esperienze.append(f"{t} | {a} | {e} | {d}")
             dettagli_seg[area] = esperienze
         #print(dettagli_seg)
        
@@ -205,16 +214,18 @@ def index():
                 continue  
             tool = request.form.getlist(f'tool_{area}[]')
             azienda = request.form.getlist(f'azienda_{area}[]')
+            durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
             certificazione = request.form.getlist(f'certificazioni_{area}[]')
-            #print(f"{area} -> Tool: {tool}, Azienda: {azienda}, Descrizione: {descrizione}, Certificazioni: {certificazione}")
+            #print(f"{area} -> Tool: {tool}, Azienda: {azienda}, Durata: {durata}, Descrizione: {descrizione}, Certificazioni: {certificazione}")
             esperienze = []
             for i in range(max(len(certificazione), len(tool), len(azienda), len(descrizione))):
                 t = tool[i] if i < len(tool) else ""
                 a = azienda[i] if i < len(azienda) else ""
+                e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
                 c = certificazione[i] if i < len(certificazione) else ""
-                esperienze.append(f" {t} | {a} | {d} | {c}")
+                esperienze.append(f" {t} | {a} | {e} | {d} | {c}")
             dettagli_bim[area] =esperienze
         #print("dettagli bim",dettagli_bim)
     
@@ -231,14 +242,16 @@ def index():
 
             tool = request.form.getlist(f'tool_{area}[]')
             azienda = request.form.getlist(f'azienda_{area}[]')
+            durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
-            #print(f"{area} -> Tool: {tool}, Azienda: {azienda}, Descrizione: {descrizione}")
+            #print(f"{area} -> Tool: {tool}, Azienda: {azienda}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
             for i in range(max(len(tool), len(azienda), len(descrizione))):
                 t = tool[i] if i < len(tool) else ""
                 a = azienda[i] if i < len(azienda) else ""
+                e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
-                esperienze.append(f"{t} | {a} | {d}")
+                esperienze.append(f"{t} | {a} | {e} | {d}")
             dettagli_pm[area] =esperienze
         #print("dettagli pm",dettagli_pm)
        
@@ -277,25 +290,6 @@ def index():
 
 
 
-        '''memorizza i dettagli delle varie sezioni non nell'ordine desiderato
-        #sviluppo
-        for area in dettagli:
-            data[area] = "\n\n".join(dettagli[area]) if dettagli[area] else ""
-        #V&V
-        for area in dettagli_vv:
-            data[area] = "\n\n".join(dettagli_vv[area]) if dettagli_vv[area] else ""
-        #safety
-        for area in dettagli_safety: 
-              data[area] = "\n\n".join(dettagli_safety[area]) if dettagli_safety[area] else ""       
-        #system
-        for area in dettagli_system:
-            data[area] = "\n\n".join(dettagli_system[area]) if dettagli_system[area] else ""
-        #segnalamento
-        for area in dettagli_seg:
-            data[area] = "\n\n".join(dettagli_seg[area]) if dettagli_seg[area] else "" '''''''''
-
-
-
         # Aggiunta delle varie sezioni con i dettagli in ordine
         aggiungi_sezione("Sviluppo", scelte_progetti_sviluppo, dettagli_sviluppo,data)
         aggiungi_sezione("V&V", scelte_progetti_vv, dettagli_vv,data)
@@ -309,18 +303,75 @@ def index():
 
 
         #salvataggio dei ati nel file Excel
-        df = pd.read_excel(EXCEL_FILE)
-        df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
-        df.to_excel(EXCEL_FILE, index=False)
-        return "Risposta salvata con successo!"
+        if request.form['action'] == 'submit_main':
+            df = pd.read_excel(EXCEL_FILE)
+            df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
+            df.to_excel(EXCEL_FILE, index=False)
+
+            success_message = "Risposta salvata con successo!"
+            show_delete_button = True  # Mostra il pulsante per eliminare la risposta appena inviata
+
+
+####################### salvataggio locale  ####################
+            user_df = pd.DataFrame([data])
+            user_df=user_df.drop(user_df.columns[0], axis=1)  #rimuove l'id
+
+            # Nome del file personale basato su email, nome e data
+            user_filename = f"skills_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+            print("user_file_name",user_filename)
+            user_filepath = os.path.join(USER_FILES_DIR, user_filename)
+
+            # Salvataggio del file
+            user_df.to_excel(user_filepath, index=False)
+
+
+        
+        #return "Risposta salvata con successo!"
     
-    return render_template("form.html")
+        elif request.form['action'] == 'delete_from_main' and user_id:
+            print(user_id)
+            # Elimina i dati dal file principale
+            remove_user_from_main_file(user_id-1)
+            success_message = "Risposta eliminata dal file principale!"
+            show_delete_button = False  # Nascondi il pulsante di eliminazione dopo l'eliminazione
+
+
+        # elif request.form['action'] == "save_personal_file":
+        #     # 2️⃣ Salvataggio in un file personale dell'utente (senza success_message)
+        #     print("data:", data)
+
+        #     user_df = pd.DataFrame([data])
+        #     user_df=user_df.drop(user_df.columns[0], axis=1)  #rimuove l'id
+
+        #     # Nome del file personale basato su email, nome e data
+        #     user_filename = f"skills_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+        #     print("user_file_name",user_filename)
+        #     user_filepath = os.path.join(USER_FILES_DIR, user_filename)
+
+        #     # Salvataggio del file
+        #     user_df.to_excel(user_filepath, index=False)
+
+        #     return render_template("form.html", user_filename=user_filename)
+        #    # return redirect(url_for("index", user_filename=user_filename))
+
+    return render_template("form.html", success_message=success_message, show_delete_button=show_delete_button) #, user_filename=user_filename
+    
+   #return render_template("form.html")
 
 @app.route("/download")
 def download():
     if not os.path.exists(EXCEL_FILE):
         return abort(404, description="File not found")
     return send_file(EXCEL_FILE, as_attachment=True, download_name="skills.xlsx")
+
+
+
+# @app.route("/download/<filename>")
+# def download_personal_file(filename):
+#     file_path = os.path.join(os.getcwd(), filename)
+#     if os.path.exists(file_path):
+#         return send_file(file_path, as_attachment=True)
+#     return abort(404, description="File non trovato")
 
 if __name__ == "__main__":
     app.run(debug=True)
