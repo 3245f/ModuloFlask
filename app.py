@@ -6,12 +6,14 @@ from datetime import datetime
 app = Flask(__name__)
 
 EXCEL_FILE = "skills.xlsx"
+
 USER_FILES_DIR = "skills_user"
 os.makedirs(USER_FILES_DIR, exist_ok=True)
 
 
+
 user_df = pd.DataFrame(columns=[
-        "Nome", "Email"])
+         "Nome", "Email"])
 
 if not os.path.exists(EXCEL_FILE):
 
@@ -312,21 +314,17 @@ def index():
             show_delete_button = True  # Mostra il pulsante per eliminare la risposta appena inviata
 
 
-####################### salvataggio locale  ####################
+            ####################### salvataggio del file con le risposte del singolo utente ####################
             user_df = pd.DataFrame([data])
             user_df=user_df.drop(user_df.columns[0], axis=1)  #rimuove l'id
 
-            # Nome del file personale basato su email, nome e data
             user_filename = f"skills_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
             print("user_file_name",user_filename)
             user_filepath = os.path.join(USER_FILES_DIR, user_filename)
-
+            print(user_filepath)
             # Salvataggio del file
             user_df.to_excel(user_filepath, index=False)
 
-
-        
-        #return "Risposta salvata con successo!"
     
         elif request.form['action'] == 'delete_from_main' and user_id:
             print(user_id)
@@ -335,43 +333,29 @@ def index():
             success_message = "Risposta eliminata dal file principale!"
             show_delete_button = False  # Nascondi il pulsante di eliminazione dopo l'eliminazione
 
-
-        # elif request.form['action'] == "save_personal_file":
-        #     # 2️⃣ Salvataggio in un file personale dell'utente (senza success_message)
-        #     print("data:", data)
-
-        #     user_df = pd.DataFrame([data])
-        #     user_df=user_df.drop(user_df.columns[0], axis=1)  #rimuove l'id
-
-        #     # Nome del file personale basato su email, nome e data
-        #     user_filename = f"skills_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
-        #     print("user_file_name",user_filename)
-        #     user_filepath = os.path.join(USER_FILES_DIR, user_filename)
-
-        #     # Salvataggio del file
-        #     user_df.to_excel(user_filepath, index=False)
-
-        #     return render_template("form.html", user_filename=user_filename)
-        #    # return redirect(url_for("index", user_filename=user_filename))
-
-    return render_template("form.html", success_message=success_message, show_delete_button=show_delete_button) #, user_filename=user_filename
-    
-   #return render_template("form.html")
+    return render_template("form.html", success_message=success_message, show_delete_button=show_delete_button,  user_filename=user_filename) 
 
 @app.route("/download")
 def download():
+    file_type = request.args.get("file", "main")  # Valore di default: 'main'
+
+    if file_type == "personal":
+        filename = request.args.get("filename")  # Il nome del file personale
+        if not filename:
+            return abort(400, description="Missing filename parameter")
+        
+        user_filepath = os.path.join(USER_FILES_DIR, filename)
+        if not os.path.exists(user_filepath):
+            return abort(404, description="File not found")
+
+        return send_file(user_filepath, as_attachment=True, download_name=filename)
+
+
     if not os.path.exists(EXCEL_FILE):
         return abort(404, description="File not found")
+
     return send_file(EXCEL_FILE, as_attachment=True, download_name="skills.xlsx")
 
-
-
-# @app.route("/download/<filename>")
-# def download_personal_file(filename):
-#     file_path = os.path.join(os.getcwd(), filename)
-#     if os.path.exists(file_path):
-#         return send_file(file_path, as_attachment=True)
-#     return abort(404, description="File non trovato")
 
 if __name__ == "__main__":
     app.run(debug=True)
