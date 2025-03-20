@@ -1612,7 +1612,7 @@ function addExperiencesNew(containerId, type) {
         <input type="text" id="hobby" name="hobby" ><br><br>
 
     <!-- Pulsante per inviare le risposte -->
-        <button type="submit" name="action" value="submit_main">Invia al file principale</button>
+        <button type="submit" name="action" value="submit_main">Invia risposta</button>
 
     </form>
 
@@ -1621,14 +1621,22 @@ function addExperiencesNew(containerId, type) {
         <p style="margin-top: 10px; color: green;">{{ success_message }}</p>
     {% endif %}
 
-    <h3>Scarica le risposte</h3>
-    <p><a href="/download">Clicca qui per scaricare il file Excel</a></p>
-
 
     {% if show_delete_button %}
     <form method="POST">
         <button type="submit" name="action" value="delete_from_main">Elimina la risposta appena inviata</button>
     </form>
+    {% endif %}
+
+
+    <h3>Scarica le risposte</h3>
+    <!--<p><a href="/download">Clicca qui per scaricare il file Excel</a></p>-->
+    <p><a href="/download?file=main">Clicca qui per scaricare il file Excel generale</a></p>
+
+
+    {% if user_filename %}
+    <h3>Scarica le tue risposte</h3>
+        <p><a href="/download?file=personal&filename={{ user_filename }}">Scarica le tue risposte</a></p>
     {% endif %}
 
 
