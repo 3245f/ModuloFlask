@@ -5,7 +5,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-EXCEL_FILE = "skills.xlsx"
+EXCEL_FILE = "skills_trial.xlsx"
 
 USER_FILES_DIR = "skills_user"
 os.makedirs(USER_FILES_DIR, exist_ok=True)
@@ -354,7 +354,7 @@ def download():
     if not os.path.exists(EXCEL_FILE):
         return abort(404, description="File not found")
 
-    return send_file(EXCEL_FILE, as_attachment=True, download_name="skills.xlsx")
+    return send_file(EXCEL_FILE, as_attachment=True, download_name="skills_trial.xlsx")
 
 
 if __name__ == "__main__":
